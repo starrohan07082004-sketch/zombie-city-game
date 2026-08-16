@@ -1,9 +1,8 @@
 name: Add 3D Models
+
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths: ['.github/workflows/add-models.yml']
+
 jobs:
   add-models:
     runs-on: ubuntu-latest
@@ -17,16 +16,10 @@ jobs:
           gh release download v1.0.0 -R ${{ github.repository }} -D models --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fix model paths in index.html
-        run: |
-          sed -i "s|https://github.com/starrohan07082004-sketch/zombie-city-game/releases/download/v1.0.0/|models/|g" index.html
-          sed -i "s|https://dl.dropboxusercontent.com/scl/fi/[^']*/character.glb?rlkey=[^']*&dl=1|models/character.glb|g" index.html
-          sed -i "s|https://dl.dropboxusercontent.com/scl/fi/[^']*/ak-47.glb?rlkey=[^']*&dl=1|models/ak-47.glb|g" index.html
-          sed -i "s|https://dl.dropboxusercontent.com/scl/fi/[^']*/ak103.glb?rlkey=[^']*&dl=1|models/ak103.glb|g" index.html
       - name: Commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add .
-          git commit -m "Add 3D model assets and fix paths [skip ci]" || echo "No changes"
+          git add models/
+          git commit -m "Add 3D model GLB files" || echo "No changes"
           git push
