@@ -15,13 +15,13 @@ jobs:
         run: |
           mkdir -p models
           gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern '*.glb'
-          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern 'index_v5.html'
-          mv -f index_v5.html index.html
+          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern 'index_v6.html'
+          mv -f index_v6.html index.html
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Move models to models directory
         run: |
-          for f in character.glb ak-47.glb ak103.glb city.glb; do
+          for f in character.glb ak-47.glb ak103.glb city.glb character_new.glb; do
             if [ -f "$f" ]; then
               mv "$f" "models/$f"
             fi
@@ -31,5 +31,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
-          git commit -m "v5: remove spin/weapons buttons, add city to game scene [skip ci]" || echo "No changes"
+          git commit -m "v6: new character + invisible joystick + city placement + boundary walls [skip ci]" || echo "No changes"
           git push
