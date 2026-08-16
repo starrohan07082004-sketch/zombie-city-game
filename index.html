@@ -122,7 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-s
 .joy-base{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.15);position:fixed;display:none;pointer-events:none;backdrop-filter:blur(4px)}
 .joy-stick{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);position:absolute;top:35px;left:35px;transition:transform .05s;pointer-events:none}
 .look-zone{position:fixed;bottom:0;right:0;width:50%;height:60%;z-index:11;pointer-events:auto;touch-action:none}
-.shoot-btn{position:fixed;bottom:30px;right:30px;width:70px;height:70px;border-radius:50%;background:rgba(200,0,0,.5);border:3px solid var(--accent);color:#fff;font-size:.7rem;font-weight:800;cursor:pointer;z-index:12;touch-action:none;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
+.shoot-btn{position:fixed;bottom:30px;right:30px;width:70px;height:70px;border-radius:50%;background:rgba(200,0,0,.5);border:3px solid var(--accent);color:#fff;font-size:.7rem;font-weight:800;cursor:pointer;z-index:20ointer;z-index:12;touch-action:none;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
 .shoot-btn:active{transform:scale(.9);background:rgba(255,82,82,.8)}
 .reload-btn{position:fixed;bottom:110px;right:40px;width:46px;height:46px;border-radius:50%;background:var(--panel);border:2px solid var(--panel-border);color:var(--text);font-size:1.2rem;cursor:pointer;z-index:12;touch-action:none;display:flex;align-items:center;justify-content:center}
 .reload-btn:active{transform:scale(.9)}
@@ -177,7 +177,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 if(screen.orientation&&screen.orientation.lock){screen.orientation.lock('landscape').catch(function(){});}
-var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[]};
+var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null};
 var toastTimer;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
 function updateCrystalDisplay(){document.getElementById('crystals').textContent=state.crystals;var w=document.getElementById('crystals-w');if(w)w.textContent=state.crystals;}
@@ -210,10 +210,10 @@ window.addEventListener('resize',onResize);window.addEventListener('orientationc
 if(window.visualViewport){window.visualViewport.addEventListener('resize',onResize);}
 var clock=new THREE.Clock();var game={active:false,health:100,maxHealth:100,score:0,kills:0,wave:1,zombies:[],bullets:[],maxZombies:5,zombieSpawnTimer:0,zombieSpawnInterval:3,waveZombiesLeft:5,waveTotal:5,betweenWaves:false,waveBreak:0,gameOver:false,paused:false,lastHitTime:0,moveDir:{x:0,y:0},lookAngle:0,playerAngle:0,isShooting:false,lastShot:0,ammo:30,maxAmmo:30,reserve:90,reloading:false,reloadStart:0,weaponName:'AK-47',weaponDmg:70,fireRate:120,reloadTime:2000,playerSpeed:4,sprintSpeed:7,cameraAngle:0,cameraDistance:5,cameraHeight:3};
 
-function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();if(state.characterMixer&&state.characterModel&&state.characterModel.visible)state.characterMixer.update(dt);if(!game.active&&state.characterModel&&state.currentAnim==='idle'){state.characterModel.position.y=Math.sin(clock.elapsedTime*1.5)*0.03;state.characterModel.rotation.z=Math.sin(clock.elapsedTime*0.8)*0.015;}ring.rotation.z+=0.003;if(game.active){gameTick(dt);}controls.update();renderer.render(scene,camera);}animate();
-var cW=35,aW=18,kW=17,cityW=20;window.__setLoader(5,'Preparing assets...');
-loadGLB('models/character.glb',function(e){if(e.total)window.__setLoader(5+(e.loaded/e.total)*cW,'Loading character...');}).then(function(gltf){var model=gltf.scene;model.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});var box=new THREE.Box3().setFromObject(model);var size=box.getSize(new THREE.Vector3());model.scale.setScalar(2.0/size.y);var box2=new THREE.Box3().setFromObject(model);var center=box2.getCenter(new THREE.Vector3());model.position.x-=center.x;model.position.y-=box2.min.y;model.position.z-=center.z;scene.remove(placeholder);scene.add(model);state.characterModel=model;if(gltf.animations&&gltf.animations.length>0){state.characterMixer=new THREE.AnimationMixer(model);state.walkAction=state.characterMixer.clipAction(gltf.animations[0]);state.walkAction.play();state.currentAnim='walk';}state.loadedModels.character=true;window.__setLoader(5+cW*0.5,'Character loaded!');
-return loadGLB('models/character_new.glb',function(e){if(e.total)window.__setLoader(5+cW*0.5+(e.loaded/e.total)*cW*0.5,'Loading game character...');}).then(function(gltf){
+function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(!game.active&&state.characterModel&&state.currentAnim==='idle'){state.characterModel.position.y=Math.sin(clock.elapsedTime*1.5)*0.03;state.characterModel.rotation.z=Math.sin(clock.elapsedTime*0.8)*0.015;}else if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;}ring.rotation.z+=0.003;if(game.active){gameTick(dt);}controls.update();renderer.render(scene,camera);}animate();
+var cW1=20,cW2=15,aW=18,kW=17,cityW=20;window.__setLoader(5,'Preparing assets...');
+loadGLB('models/character.glb',function(e){if(e.total)window.__setLoader(5+(e.loaded/e.total)*cW1,'Loading character...');}).then(function(gltf){var model=gltf.scene;model.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});var box=new THREE.Box3().setFromObject(model);var size=box.getSize(new THREE.Vector3());model.scale.setScalar(2.0/size.y);var box2=new THREE.Box3().setFromObject(model);var center=box2.getCenter(new THREE.Vector3());model.position.x-=center.x;model.position.y-=box2.min.y;model.position.z-=center.z;scene.remove(placeholder);scene.add(model);state.characterModel=model;state.lobbyCharacterModel=model;state.lobbyCharacterMixer=null;state.lobbyWalkAction=null;if(gltf.animations&&gltf.animations.length>0){state.characterMixer=new THREE.AnimationMixer(model);state.walkAction=state.characterMixer.clipAction(gltf.animations[0]);state.walkAction.play();state.currentAnim='walk';state.lobbyCharacterMixer=state.characterMixer;state.lobbyWalkAction=state.walkAction;}state.loadedModels.character=true;window.__setLoader(5+cW1,'Character loaded!');
+return loadGLB('models/character_new.glb',function(e){if(e.total)window.__setLoader(5+cW1+(e.loaded/e.total)*cW2,'Loading game character...');}).then(function(gltf){
 var model=gltf.scene;model.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 var box=new THREE.Box3().setFromObject(model);var size=box.getSize(new THREE.Vector3());
 if(size.y>0)model.scale.setScalar(2.0/size.y);
@@ -222,7 +222,7 @@ model.position.x-=center.x;model.position.y-=box2.min.y;model.position.z-=center
 model.visible=false;scene.add(model);state.gameCharacterModel=model;
 state.gameCharacterMixer=new THREE.AnimationMixer(model);
 if(gltf.animations&&gltf.animations.length>0){state.gameCharAction=state.gameCharacterMixer.clipAction(gltf.animations[0]);state.gameCharAction.play();state.gameCharAnim='walk';}
-window.__setLoader(5+cW,'Game character loaded!');return loadGLB('models/ak-47.glb',function(e){if(e.total)window.__setLoader(5+cW+(e.loaded/e.total)*aW,'Loading AK-47...');});}).then(function(gltf){state.loadedModels.ak47=gltf;window.__setLoader(5+cW+aW,'AK-47 loaded!');return loadGLB('models/ak103.glb',function(e){if(e.total)window.__setLoader(5+cW+aW+(e.loaded/e.total)*kW,'Loading AK-103...');});}).then(function(gltf){state.loadedModels.ak103=gltf;window.__setLoader(5+cW+aW+kW,'AK-103 loaded!');return loadGLB('models/city.glb',function(e){if(e.total)window.__setLoader(5+cW+aW+kW+(e.loaded/e.total)*cityW,'Loading city...');});}).then(function(gltf){state.cityModel=gltf;var city=gltf.scene;city.traverse(function(o){if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});var box=new THREE.Box3().setFromObject(city);var size=box.getSize(new THREE.Vector3());var maxD=Math.max(size.x,size.z);if(maxD>0){city.scale.setScalar(50/maxD);}var box2=new THREE.Box3().setFromObject(city);var center2=box2.getCenter(new THREE.Vector3());city.position.x-=center2.x;city.position.z-=center2.z;city.position.y=box2.min.y-1;city.visible=false;scene.add(city);
+window.__setLoader(5+cW1+cW2,'Game character loaded!');return loadGLB('models/ak-47.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+(e.loaded/e.total)*aW,'Loading AK-47...');});}).then(function(gltf){state.loadedModels.ak47=gltf;window.__setLoader(5+cW1+cW2+aW,'AK-47 loaded!');return loadGLB('models/ak103.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+aW+(e.loaded/e.total)*kW,'Loading AK-103...');});}).then(function(gltf){state.loadedModels.ak103=gltf;window.__setLoader(5+cW1+cW2+aW+kW,'AK-103 loaded!');return loadGLB('models/city.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+aW+kW+(e.loaded/e.total)*cityW,'Loading city...');});}).then(function(gltf){state.cityModel=gltf;var city=gltf.scene;city.traverse(function(o){if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});var box=new THREE.Box3().setFromObject(city);var size=box.getSize(new THREE.Vector3());var maxD=Math.max(size.x,size.z);if(maxD>0){city.scale.setScalar(50/maxD);}var box2=new THREE.Box3().setFromObject(city);var center2=box2.getCenter(new THREE.Vector3());city.position.x-=center2.x;city.position.z-=center2.z;city.position.y=box2.min.y-1;city.visible=false;scene.add(city);
 state.cityBounds=new THREE.Box3().setFromObject(city);
 var cb=state.cityBounds;var cx=cb.min.x+(cb.max.x-cb.min.x)/2;var cz=cb.min.z+(cb.max.z-cb.min.z)/2;
 var halfW=(cb.max.x-cb.min.x)/2*0.9;var halfD=(cb.max.z-cb.min.z)/2*0.9;
@@ -282,16 +282,21 @@ game.ammo=30;game.reserve=90;game.reloading=false;game.isShooting=false;game.las
 game.cameraAngle=0;game.playerAngle=0;
 var spawnX=0,spawnZ=0;
 if(state.cityCenter){spawnX=state.cityCenter.x;spawnZ=state.cityCenter.z;}
+if(state.lobbyCharacterModel)state.lobbyCharacterModel.visible=false;
 if(state.gameCharacterModel){
-if(state.characterModel)state.characterModel.visible=false;
 state.gameCharacterModel.visible=true;
 state.gameCharacterModel.position.set(spawnX,0,spawnZ);
 state.gameCharacterModel.rotation.y=0;
-state.characterModel=state.gameCharacterModel;
-if(state.characterMixer)state.characterMixer=state.gameCharacterMixer;
-if(state.walkAction)state.walkAction=state.gameCharAction;
+state.activeCharacter=state.gameCharacterModel;
+state.activeMixer=state.gameCharacterMixer;
+state.activeWalkAction=state.gameCharAction;
 state.currentAnim='walk';
-}else if(state.characterModel){state.characterModel.position.set(spawnX,0,spawnZ);state.characterModel.rotation.y=0;}
+}else{
+if(state.characterModel)state.characterModel.position.set(spawnX,0,spawnZ);
+state.activeCharacter=state.characterModel;
+state.activeMixer=state.characterMixer;
+state.activeWalkAction=state.walkAction;
+}
 if(state.cityModel){state.cityModel.visible=true;}
 if(state.cityWalls)state.cityWalls.forEach(function(w){w.visible=false;});
 controls.enabled=false;
@@ -305,6 +310,15 @@ game.active=false;game.gameOver=true;
 if(state.cityModel)state.cityModel.visible=false;
 if(state.gameCharacterModel)state.gameCharacterModel.visible=false;
 if(state.cityWalls)state.cityWalls.forEach(function(w){w.visible=false;});
+if(state.lobbyCharacterModel){
+state.lobbyCharacterModel.visible=true;
+state.characterModel=state.lobbyCharacterModel;
+state.characterMixer=state.lobbyCharacterMixer;
+state.walkAction=state.lobbyWalkAction;
+state.currentAnim='walk';
+if(state.walkAction){state.walkAction.reset();state.walkAction.play();}
+state.activeCharacter=null;state.activeMixer=null;state.activeWalkAction=null;
+}
 var earned=Math.floor(game.score/10)+game.wave*25;
 state.crystals+=earned;localStorage.setItem('zc_crystals',state.crystals);updateCrystalDisplay();
 document.getElementById('go-score').textContent=game.score;
@@ -485,8 +499,8 @@ updateGameHUD();
 }
 
 function updateGamePlayer(dt){
-if(!state.characterModel)return;
-var p=state.characterModel.position;
+if(!state.activeCharacter)return;
+var p=state.activeCharacter.position;
 var speed=game.playerSpeed;
 var forward=new THREE.Vector3(-Math.sin(game.cameraAngle),0,-Math.cos(game.cameraAngle));
 var right=new THREE.Vector3(Math.cos(game.cameraAngle),0,-Math.sin(game.cameraAngle));
@@ -497,7 +511,7 @@ if(len>1){mvx/=len;mvy/=len;}
 p.x+=forward.x*mvy*speed*dt+right.x*mvx*speed*dt;
 p.z+=forward.z*mvy*speed*dt+right.z*mvx*speed*dt;
 game.playerAngle=Math.atan2(forward.x*mvy+right.x*mvx,-(forward.z*mvy+right.z*mvx));
-state.characterModel.rotation.y=game.playerAngle;
+state.activeCharacter.rotation.y=game.playerAngle;
 if(state.characterMixer&&state.currentAnim!=='walk'){if(state.walkAction){state.walkAction.reset();state.walkAction.play();}state.currentAnim='walk';}
 }else{
 if(state.characterMixer&&state.currentAnim!=='idle'){if(state.walkAction)state.walkAction.stop();state.currentAnim='idle';}
@@ -512,8 +526,8 @@ if(p.z>cz+state.cityHalfD)p.z=cz+state.cityHalfD;
 }
 
 function updateGameCamera(dt){
-if(!state.characterModel)return;
-var p=state.characterModel.position;
+if(!state.activeCharacter)return;
+var p=state.activeCharacter.position;
 var targetX=p.x-Math.sin(game.cameraAngle)*game.cameraDistance;
 var targetZ=p.z-Math.cos(game.cameraAngle)*game.cameraDistance;
 camera.position.x+=(targetX-camera.position.x)*0.1;
