@@ -270,12 +270,11 @@ return loadGLB('models/city.glb',function(e){if(e.total)window.__setLoader(5+cW1
 })
 .then(function(gltf){
 state.cityModel=gltf;var city=gltf.scene;
-city.traverse(function(o){if(o.isMesh){o.castShadow=false;o.receiveShadow=true;}});
+city.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 var box=new THREE.Box3().setFromObject(city);var size=box.getSize(new THREE.Vector3());
 var maxD=Math.max(size.x,size.z);if(maxD>0){city.scale.setScalar(50/maxD);}
 var box2=new THREE.Box3().setFromObject(city);var center2=box2.getCenter(new THREE.Vector3());
-city.position.x-=center2.x;city.position.z-=center2.z;city.position.y=box2.min.y-1;
-city.visible=false;scene.add(city);
+city.position.x-=center2.x;city.position.z-=center2.z;city.position.y=box2.min.y-1;scene.add(city);
 state.cityBounds=new THREE.Box3().setFromObject(city);
 var cb=state.cityBounds;var cx=cb.min.x+(cb.max.x-cb.min.x)/2;var cz=cb.min.z+(cb.max.z-cb.min.z)/2;
 var halfW=(cb.max.x-cb.min.x)/2*0.9;var halfD=(cb.max.z-cb.min.z)/2*0.9;
@@ -363,7 +362,6 @@ showToast('Wave 1 - Survive!');
 
 function endGame(){
 game.active=false;game.gameOver=true;
-if(state.cityModel)state.cityModel.visible=false;
 if(state.gameCharacterModel)state.gameCharacterModel.visible=false;
 if(state.cityWalls)state.cityWalls.forEach(function(w){w.visible=false;});
 if(state.lobbyCharacterModel){
