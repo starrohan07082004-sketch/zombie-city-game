@@ -1,7 +1,8 @@
 name: Add 3D Models
 
 on:
-  workflow_dispatch:
+  repository_dispatch:
+    types: [add_models]
 
 jobs:
   add-models:
@@ -21,5 +22,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add models/
-          git commit -m "Add 3D model GLB files" || echo "No changes"
+          git commit -m "Add 3D model GLB files [skip ci]" || echo "No changes"
           git push
