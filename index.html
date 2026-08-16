@@ -124,7 +124,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 if(screen.orientation&&screen.orientation.lock){screen.orientation.lock('landscape').catch(function(){});}
-var GB='https://github.com/starrohan07082004-sketch/zombie-city-game/releases/download/v1.0.0/';
+var GB='models/';
 var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{}};
 var toastTimer;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
