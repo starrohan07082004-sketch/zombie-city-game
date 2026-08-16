@@ -1,4 +1,4 @@
-name: Add 3D Models
+name: Add 3D Models and Update Index
 
 on:
   repository_dispatch:
@@ -11,16 +11,23 @@ jobs:
       contents: write
     steps:
       - uses: actions/checkout@v4
-      - name: Download release assets
+      - name: Download all release assets
         run: |
           mkdir -p models
-          gh release download v1.0.0 -R ${{ github.repository }} -D models --clobber
+          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Move models to models directory
+        run: |
+          for f in character.glb ak-47.glb ak103.glb city.glb; do
+            if [ -f "$f" ]; then
+              mv "$f" "models/$f"
+            fi
+          done
       - name: Commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
-          git add models/
-          git commit -m "Add 3D model GLB files [skip ci]" || echo "No changes"
+          git add -A
+          git commit -m "Add 3D model GLB files and updated index.html [skip ci]" || echo "No changes"
           git push
