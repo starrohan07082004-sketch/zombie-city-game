@@ -153,8 +153,9 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-s
 </style>
 </head>
 <body>
+<canvas id="scene"></canvas>
 <div class="screen active" id="screen-loading"><div class="logo">Zombie City</div><div class="subtitle">SURVIVE THE NIGHT</div><div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div><div class="loader-percent" id="loader-percent">0%</div><div class="status" id="loader-status">Initializing...</div><button class="enter-btn" id="enter-btn">Enter City</button></div>
-<div class="screen" id="screen-lobby"><canvas id="scene"></canvas><div class="hud top-left"><div class="user-card"><div class="avatar" id="avatar">P</div><div class="user-info"><div class="user-label">Player ID</div><div id="user-id-display" class="user-id">Player_001</div><input id="user-id-input" class="user-id-input" type="text" style="display:none" maxlength="16"></div><button class="edit-btn" id="edit-btn">&#9998; Edit</button></div></div><div class="hud top-right"><div class="crystal-card"><div class="crystal-icon"></div><div><div class="crystal-label">Crystals</div><div class="crystal-count" id="crystals">500</div></div></div></div><div class="hud bottom-left"><button class="spin-btn" id="spin-btn"><span class="spin-icon">&#127920;</span> Spin</button><button class="weapons-btn" id="weapons-btn">&#9876;&#65039; Weapons Store</button></div><div class="hud bottom-right"><button class="play-btn" id="play-btn">&#9654; Play</button></div><div class="center-hint">Drag to rotate &middot; Scroll to zoom &middot; Double-click idle/walk</div><div class="modal-bg" id="wheel-modal"><div class="wheel-container"><div class="wheel-title">&#127920; Daily Spin</div><canvas id="wheel-canvas" width="320" height="320"></canvas><button class="spin-action" id="spin-action">SPIN!</button><div class="reward-text" id="reward-text"></div><button class="close-wheel" id="close-wheel">Close</button></div></div></div>
+<div class="screen" id="screen-lobby"><div class="hud top-left"><div class="user-card"><div class="avatar" id="avatar">P</div><div class="user-info"><div class="user-label">Player ID</div><div id="user-id-display" class="user-id">Player_001</div><input id="user-id-input" class="user-id-input" type="text" style="display:none" maxlength="16"></div><button class="edit-btn" id="edit-btn">&#9998; Edit</button></div></div><div class="hud top-right"><div class="crystal-card"><div class="crystal-icon"></div><div><div class="crystal-label">Crystals</div><div class="crystal-count" id="crystals">500</div></div></div></div><div class="hud bottom-left"><button class="spin-btn" id="spin-btn"><span class="spin-icon">&#127920;</span> Spin</button><button class="weapons-btn" id="weapons-btn">&#9876;&#65039; Weapons Store</button></div><div class="hud bottom-right"><button class="play-btn" id="play-btn">&#9654; Play</button></div><div class="center-hint">Drag to rotate &middot; Scroll to zoom &middot; Double-click idle/walk</div><div class="modal-bg" id="wheel-modal"><div class="wheel-container"><div class="wheel-title">&#127920; Daily Spin</div><canvas id="wheel-canvas" width="320" height="320"></canvas><button class="spin-action" id="spin-action">SPIN!</button><div class="reward-text" id="reward-text"></div><button class="close-wheel" id="close-wheel">Close</button></div></div></div>
 <div class="screen" id="screen-weapons"><div class="topbar"><button class="back-btn" id="back-btn">&larr; Back to Lobby</button><div class="store-title">&#9876;&#65039; Weapons Store</div><div class="crystal-display"><div class="crystal-icon"></div><div class="crystal-count" id="crystals-w">500</div></div></div><div class="filter-bar" id="filter-bar"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="melee">Melee</button><button class="filter-btn" data-filter="pistol">Pistol</button><button class="filter-btn" data-filter="rifle">Rifle</button><button class="filter-btn" data-filter="heavy">Heavy</button></div><div class="grid" id="grid"></div></div>
 
 <div class="screen" id="screen-game"><div class="damage-vignette" id="dmg-vignette"></div><div id="crosshair">+</div><div id="game-hud"><div class="ghud-tl"><div class="health-bar"><span class="hp-label">HP</span><div class="hp-track"><div class="hp-fill" id="hp-fill"></div></div></div></div><div class="ghud-tc"><div class="wave-info" id="wave-info">WAVE 1</div><div class="score-info" id="score-info">Score: 0</div><div class="kill-info" id="kill-info">Kills: 0</div></div><div class="ghud-tr"><button id="pause-btn">II</button></div><div class="joystick-zone" id="joy-zone"><div class="joy-base" id="joy-base"><div class="joy-stick" id="joy-stick"></div></div></div><div class="look-zone" id="look-zone"></div><div class="weapon-name-hud" id="weapon-hud">AK-47</div><div class="ammo-display" id="ammo-display">30 / 90</div><button class="reload-btn" id="reload-btn">&#x21bb;</button><button class="shoot-btn" id="shoot-btn">FIRE</button></div></div>
@@ -516,17 +517,18 @@ game.moveDir.x=x;game.moveDir.y=y;
 if(keys['Space']||keys['ShiftLeft'])game.playerSpeed=game.sprintSpeed;
 else game.playerSpeed=4;
 }
-setInterval(readKeyboard,16);
+try{setInterval(readKeyboard,16);}catch(e){console.error('Keyboard interval error:',e);}
 
 // ===== INPUT: Mouse =====
 var mouseDown=false,mouseX=0;
-if(document.getElementById('look-zone')){
+try{if(document.getElementById('look-zone')){
 var lz=document.getElementById('look-zone');
 lz.addEventListener('pointerdown',function(e){mouseDown=true;mouseX=e.clientX;});
 lz.addEventListener('pointermove',function(e){if(mouseDown){game.cameraAngle-=(e.clientX-mouseX)*0.005;mouseX=e.clientX;}});
 lz.addEventListener('pointerup',function(){mouseDown=false;});
 lz.addEventListener('pointerleave',function(){mouseDown=false;});
-}
+}}catch(e){console.error('Look zone setup error:',e);}
+try{
 var shootBtn=document.getElementById('shoot-btn');
 if(shootBtn){
 shootBtn.addEventListener('pointerdown',function(){game.isShooting=true;});
@@ -535,8 +537,10 @@ shootBtn.addEventListener('pointerleave',function(){game.isShooting=false;});
 }
 var reloadBtnEl=document.getElementById('reload-btn');
 if(reloadBtnEl)reloadBtnEl.addEventListener('click',function(){reloadWeapon();});
+}catch(e){console.error('Input setup error:',e);}
 
 // ===== INPUT: Joystick =====
+try{
 var joyActive=false,joyStartX=0,joyStartY=0;
 var joyZone=document.getElementById('joy-zone');
 var joyStick=document.getElementById('joy-stick');
@@ -560,13 +564,16 @@ game.moveDir.x=dx/maxDist;game.moveDir.y=-dy/maxDist;
 joyZone.addEventListener('pointerup',function(){joyActive=false;joyStick.style.transform='';game.moveDir.x=0;game.moveDir.y=0;joyBase.style.display='none';});
 joyZone.addEventListener('pointerleave',function(){joyActive=false;joyStick.style.transform='';game.moveDir.x=0;game.moveDir.y=0;joyBase.style.display='none';});
 }
+}catch(e){console.error('Joystick setup error:',e);}
 
 // ===== Pause / Game Over buttons =====
+try{
 document.getElementById('pause-btn').addEventListener('click',function(){if(game.active&&!game.gameOver){game.paused=!game.paused;document.getElementById('pause-menu').classList.toggle('show',game.paused);}});
 document.getElementById('pause-resume').addEventListener('click',function(){game.paused=false;document.getElementById('pause-menu').classList.remove('show');});
 document.getElementById('pause-lobby').addEventListener('click',function(){game.paused=false;document.getElementById('pause-menu').classList.remove('show');returnToLobby();});
 document.getElementById('go-play-again').addEventListener('click',function(){startGame();});
 document.getElementById('go-lobby').addEventListener('click',function(){returnToLobby();});
+}catch(e){console.error('Game UI setup error:',e);}
 
 </script>
 </body>
