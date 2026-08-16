@@ -14,7 +14,7 @@ jobs:
       - name: Download all release assets
         run: |
           mkdir -p models
-          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber
+          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern '*.glb'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Move models to models directory
@@ -24,10 +24,13 @@ jobs:
               mv "$f" "models/$f"
             fi
           done
+      - name: Fix loading screen CSS bug
+        run: |
+          sed -i 's/#screen-loading{background:radial-gradient(circle at 50% 40%,#1a0f0f 0%,#050202 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}/#screen-loading{background:radial-gradient(circle at 50% 40%,#1a0f0f 0%,#050202 100%)}#screen-loading.active{display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000}/g' index.html
       - name: Commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
-          git commit -m "Add 3D model GLB files and updated index.html [skip ci]" || echo "No changes"
+          git commit -m "Fix loading screen CSS bug + update models [skip ci]" || echo "No changes"
           git push
