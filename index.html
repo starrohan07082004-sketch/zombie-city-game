@@ -286,7 +286,17 @@ var box2=new THREE.Box3().setFromObject(city);var center2=box2.getCenter(new THR
 city.position.x-=center2.x;city.position.z-=center2.z;city.position.y=-box2.min.y;scene.add(city);
 state.cityBounds=new THREE.Box3().setFromObject(city);
 state.collMeshes=[];
-city.traverse(function(o){if(o.isMesh)state.collMeshes.push(o);});
+state.collBoxes=[];
+city.traverse(function(o){
+if(o.isMesh){
+state.collMeshes.push(o);
+var bb=new THREE.Box3().setFromObject(o);
+var sz=bb.getSize(new THREE.Vector3());
+if(sz.x>0.5&&sz.z>0.5&&sz.y>1){
+state.collBoxes.push({minX:bb.min.x,maxX:bb.max.x,minZ:bb.min.z,maxZ:bb.max.z,minY:bb.min.y,maxY:bb.max.y});
+}
+}
+});
 var cb=state.cityBounds;var cx=cb.min.x+(cb.max.x-cb.min.x)/2;var cz=cb.min.z+(cb.max.z-cb.min.z)/2;
 var halfW=(cb.max.x-cb.min.x)/2*0.95;var halfD=(cb.max.z-cb.min.z)/2*0.95;
 state.cityCenter={x:cx,z:cz};state.cityHalfW=halfW;state.cityHalfD=halfD;
@@ -520,16 +530,20 @@ var dist=Math.sqrt(dx*dx+dz*dz);
 if(dist>0.1){
 var zNewX=z.mesh.position.x+(dx/dist)*z.speed*dt;
 var zNewZ=z.mesh.position.z+(dz/dist)*z.speed*dt;
-if(state.collMeshes&&state.collMeshes.length>0){
-var zMoveDir=new THREE.Vector3(dx/dist,0,dz/dist);
-var zRayOrigin=new THREE.Vector3(z.mesh.position.x,z.mesh.position.y+0.5,z.mesh.position.z);
-gameRaycaster.set(zRayOrigin,zMoveDir);
-gameRaycaster.far=1.0;
-var zHits=gameRaycaster.intersectObjects(state.collMeshes,false);
-if(zHits.length===0){
-z.mesh.position.x=zNewX;
-z.mesh.position.z=zNewZ;
+if(state.collBoxes&&state.collBoxes.length>0){
+var zRad=0.5;
+var zCanX=true,zCanZ=true;
+for(var zi=0;zi<state.collBoxes.length;zi++){
+var zb=state.collBoxes[zi];
+if(zNewX+zRad>zb.minX&&zNewX-zRad<zb.maxX&&z.mesh.position.z+zRad>zb.minZ&&z.mesh.position.z-zRad<zb.maxZ){
+zCanX=false;
 }
+if(z.mesh.position.x+zRad>zb.minX&&z.mesh.position.x-zRad<zb.maxX&&zNewZ+zRad>zb.minZ&&zNewZ-zRad<zb.maxZ){
+zCanZ=false;
+}
+}
+if(zCanX)z.mesh.position.x=zNewX;
+if(zCanZ)z.mesh.position.z=zNewZ;
 }else{
 z.mesh.position.x=zNewX;
 z.mesh.position.z=zNewZ;
@@ -592,41 +606,30 @@ if(!state.activeCharacter)return;
 var p=state.activeCharacter.position;
 var speed=game.playerSpeed;
 var forward=new THREE.Vector3(-Math.sin(game.cameraAngle),0,-Math.cos(game.cameraAngle));
-var right=new THREE.Vector3(Math.cos(game.cameraAngle),0,-Math.sin(game.cameraAngle));
+var right=new THREE.Vector3(-Math.cos(game.cameraAngle),0,Math.sin(game.cameraAngle));
 var mvx=game.moveDir.x;var mvy=game.moveDir.y;
 if(mvx||mvy){
 var len=Math.sqrt(mvx*mvx+mvy*mvy);
 if(len>1){mvx/=len;mvy/=len;}
 var newX=p.x+forward.x*mvy*speed*dt+right.x*mvx*speed*dt;
 var newZ=p.z+forward.z*mvy*speed*dt+right.z*mvx*speed*dt;
-if(state.collMeshes&&state.collMeshes.length>0){
-var moveDir=new THREE.Vector3(newX-p.x,0,newZ-p.z).normalize();
-var rayOrigin=new THREE.Vector3(p.x,p.y+0.5,p.z);
-gameRaycaster.set(rayOrigin,moveDir);
-gameRaycaster.far=1.2;
-var hits=gameRaycaster.intersectObjects(state.collMeshes,false);
-if(hits.length>0){
-var sideDir=new THREE.Vector3(-moveDir.z,0,moveDir.x);
-var rayOrigin2=new THREE.Vector3(p.x,p.y+0.5,p.z);
-gameRaycaster.set(rayOrigin2,sideDir);
-gameRaycaster.far=0.8;
-var sideHits=gameRaycaster.intersectObjects(state.collMeshes,false);
-var sideDir2=sideDir.clone().negate();
-gameRaycaster.set(rayOrigin2,sideDir2);
-gameRaycaster.far=0.8;
-var sideHits2=gameRaycaster.intersectObjects(state.collMeshes,false);
-if(sideHits.length===0){
-newX=p.x+sideDir.x*speed*dt;
-newZ=p.z+sideDir.z*speed*dt;
-}else if(sideHits2.length===0){
-newX=p.x+sideDir2.x*speed*dt;
-newZ=p.z+sideDir2.z*speed*dt;
+if(state.collBoxes&&state.collBoxes.length>0){
+var pRad=0.6;
+var canX=true,canZ=true;
+for(var bi=0;bi<state.collBoxes.length;bi++){
+var b=state.collBoxes[bi];
+if(newX+pRad>b.minX&&newX-pRad<b.maxX&&p.z+pRad>b.minZ&&p.z-pRad<b.maxZ&&p.y+1.5>b.minY&&p.y<b.maxY){
+canX=false;
+}
+if(p.x+pRad>b.minX&&p.x-pRad<b.maxX&&newZ+pRad>b.minZ&&newZ-pRad<b.maxZ&&p.y+1.5>b.minY&&p.y<b.maxY){
+canZ=false;
+}
+}
+if(canX)p.x=newX;
+if(canZ)p.z=newZ;
 }else{
-newX=p.x;newZ=p.z;
-}
-}
-}
 p.x=newX;p.z=newZ;
+}
 if(game.isShooting){
 game.playerAngle=game.cameraAngle;
 state.activeCharacter.rotation.y=game.cameraAngle;
@@ -658,7 +661,10 @@ var targetY=p.y+game.cameraHeight+vertDist;
 camera.position.x+=(targetX-camera.position.x)*0.15;
 camera.position.z+=(targetZ-camera.position.z)*0.15;
 camera.position.y+=(targetY-camera.position.y)*0.15;
-camera.lookAt(p.x,p.y+1.2,p.z);
+var lookX=p.x+Math.sin(game.cameraAngle)*10;
+var lookZ=p.z+Math.cos(game.cameraAngle)*10;
+var lookY=p.y+1.2-game.cameraPitch*5;
+camera.lookAt(lookX,lookY,lookZ);
 }
 
 function gameTick(dt){
