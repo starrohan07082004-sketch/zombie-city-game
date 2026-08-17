@@ -15,8 +15,8 @@ jobs:
         run: |
           mkdir -p models
           gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern '*.glb'
-          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern 'index_v15.html'
-          mv -f index_v15.html index.html
+          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern 'index_v16.html'
+          mv -f index_v16.html index.html
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Move models to models directory
@@ -31,5 +31,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
-          git commit -m "v15: 3D zombie model + AI fix + pro polish [skip ci]" || echo "No changes"
+          git commit -m "v16: safe zombie model + AI fix [skip ci]" || echo "No changes"
           git push
