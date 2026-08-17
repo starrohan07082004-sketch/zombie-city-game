@@ -261,7 +261,7 @@ if(cb.leftForeArm)cb.leftForeArm.rotation.x=0;
 if(cb.spine)cb.spine.rotation.y=moving?0:Math.sin(wp*0.3)*0.05;
 if(cb.head)cb.head.rotation.y=moving?0:Math.sin(wp*0.2)*0.1;
 }
-function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;updateCharBones(dt);}if(game.active){gameTick(dt);}else{controls.update();}renderer.render(scene,camera);}animate();
+function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;}if(game.active){gameTick(dt);}else{controls.update();}renderer.render(scene,camera);}animate();
 var cW1=20,cW2=15,aW=18,kW=17,cityW=20;
 window.__setLoader(5,'Preparing assets...');
 loadGLB('models/character.glb',function(e){if(e.total)window.__setLoader(5+(e.loaded/e.total)*cW1,'Loading character...');})
@@ -291,22 +291,7 @@ m.position.x-=c.x;m.position.y-=b2.min.y;m.position.z-=c.z;
 m.visible=false;scene.add(m);state.gameCharacterModel=m;
 state.gameCharacterMixer=new THREE.AnimationMixer(m);
 m.traverse(function(o){
-var n=o.name||'';
-if(n.indexOf('Hips')>=0)state.charBones.hips=o;
-if(n.indexOf('Spine_')>=0)state.charBones.spine=o;
-if(n.indexOf('Spine1')>=0)state.charBones.spine1=o;
-if(n.indexOf('Spine2')>=0)state.charBones.spine2=o;
-if(n.indexOf('LeftUpLeg')>=0)state.charBones.leftUpLeg=o;
-if(n.indexOf('LeftLeg_')>=0)state.charBones.leftLeg=o;
-if(n.indexOf('RightUpLeg')>=0)state.charBones.rightUpLeg=o;
-if(n.indexOf('RightLeg_')>=0)state.charBones.rightLeg=o;
-if(n.indexOf('LeftArm_')>=0)state.charBones.leftArm=o;
-if(n.indexOf('LeftForeArm')>=0)state.charBones.leftForeArm=o;
-if(n.indexOf('RightArm_')>=0)state.charBones.rightArm=o;
-if(n.indexOf('RightForeArm')>=0)state.charBones.rightForeArm=o;
-if(n.indexOf('RightHand_')>=0&&!n.includes('Thumb')&&!n.includes('Index')&&!n.includes('Middle')&&!n.includes('Ring')&&!n.includes('Pinky'))state.charBones.rightHand=o;
-if(n.indexOf('LeftHand_')>=0&&!n.includes('Thumb')&&!n.includes('Index')&&!n.includes('Middle')&&!n.includes('Ring')&&!n.includes('Pinky'))state.charBones.leftHand=o;
-if(n.indexOf('Head_')>=0&&!n.includes('Top'))state.charBones.head=o;
+var n=(o.name||'').trim();if(n==='Hips_66')state.charBones.hips=o;else if(n==='LeftUpLeg_60')state.charBones.leftUpLeg=o;else if(n==='LeftLeg_59')state.charBones.leftLeg=o;else if(n==='RightUpLeg_65')state.charBones.rightUpLeg=o;else if(n==='RightLeg_64')state.charBones.rightLeg=o;else if(n==='RightArm_51')state.charBones.rightArm=o;else if(n==='RightForeArm_50')state.charBones.rightForeArm=o;else if(n==='RightHand_49')state.charBones.rightHand=o;else if(n==='LeftArm_27')state.charBones.leftArm=o;else if(n==='LeftForeArm_26')state.charBones.leftForeArm=o;else if(n==='LeftHand_25')state.charBones.leftHand=o;else if(n==='Head_3')state.charBones.head=o;
 });
 window.__setLoader(5+cW1+cW2,'Character loaded!');
 }).catch(function(e){console.warn('Game char failed:',e);window.__setLoader(5+cW1+cW2,'Game char skipped');});
