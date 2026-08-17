@@ -122,6 +122,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-s
 .joy-base{width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.15);position:fixed;display:none;pointer-events:none;backdrop-filter:blur(4px)}
 .joy-stick{width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.3);position:absolute;top:35px;left:35px;transition:transform .05s;pointer-events:none}
 .look-zone{position:fixed;bottom:0;right:0;width:50%;height:60%;z-index:11;pointer-events:auto;touch-action:none}
+.emote-btn{position:fixed;bottom:30px;right:180px;width:50px;height:50px;border-radius:50%;background:var(--panel);border:2px solid var(--panel-border);color:#fff;font-size:1.2rem;cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center}.emote-btn:active{transform:scale(0.9)}
 .shoot-btn{position:fixed;bottom:30px;right:30px;width:70px;height:70px;border-radius:50%;background:rgba(200,0,0,.5);border:3px solid var(--accent);color:#fff;font-size:.7rem;font-weight:800;cursor:pointer;z-index:20ointer;z-index:12;touch-action:none;display:flex;align-items:center;justify-content:center;text-transform:uppercase}
 .shoot-btn:active{transform:scale(.9);background:rgba(255,82,82,.8)}
 .reload-btn{position:fixed;bottom:110px;right:40px;width:46px;height:46px;border-radius:50%;background:var(--panel);border:2px solid var(--panel-border);color:var(--text);font-size:1.2rem;cursor:pointer;z-index:12;touch-action:none;display:flex;align-items:center;justify-content:center}
@@ -140,6 +141,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-s
 .go-btn:active{transform:translateY(0)}
 .go-btn-play{background:linear-gradient(180deg,#c62828,#8e0000);color:#fff}
 .go-btn-lobby{background:var(--panel);border:1px solid var(--panel-border);color:var(--text)}
+.cross-dot{width:4px;height:4px;background:#ff5252;border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}.cross-ring{width:24px;height:24px;border:2px solid rgba(255,82,82,0.4);border-radius:50%;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
 #crosshair{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);z-index:10;pointer-events:none;color:rgba(255,255,255,.4);font-size:1.2rem}
 .damage-vignette{position:fixed;inset:0;z-index:9;pointer-events:none;box-shadow:inset 0 0 80px rgba(255,0,0,0);transition:box-shadow .15s}
 .damage-vignette.hit{box-shadow:inset 0 0 80px rgba(255,0,0,.6)}
@@ -155,10 +157,10 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Tahoma,sans-s
 <body>
 <canvas id="scene"></canvas>
 <div class="screen active" id="screen-loading"><div class="logo">Zombie City</div><div class="subtitle">SURVIVE THE NIGHT</div><div class="loader-bar"><div class="loader-fill" id="loader-fill"></div></div><div class="loader-percent" id="loader-percent">0%</div><div class="status" id="loader-status">Initializing...</div><button class="enter-btn" id="enter-btn">Enter City</button></div>
-<div class="screen" id="screen-lobby"><div class="hud top-left"><div class="user-card"><div class="avatar" id="avatar">P</div><div class="user-info"><div class="user-label">Player ID</div><div id="user-id-display" class="user-id">Player_001</div><input id="user-id-input" class="user-id-input" type="text" style="display:none" maxlength="16"></div><button class="edit-btn" id="edit-btn">&#9998; Edit</button></div></div><div class="hud top-right"><div class="crystal-card"><div class="crystal-icon"></div><div><div class="crystal-label">Crystals</div><div class="crystal-count" id="crystals">500</div></div></div></div><div class="hud bottom-left"></div><div class="hud bottom-right"><button class="play-btn" id="play-btn">&#9654; Play</button></div><div class="center-hint">Drag to rotate &middot; Scroll to zoom &middot; Double-click idle/walk</div><div class="modal-bg" id="wheel-modal"><div class="wheel-container"><div class="wheel-title">&#127920; Daily Spin</div><canvas id="wheel-canvas" width="260" height="260"></canvas><button class="spin-action" id="spin-action">SPIN!</button><div class="reward-text" id="reward-text"></div><button class="close-wheel" id="close-wheel">Close</button></div></div></div>
+<div class="screen" id="screen-lobby"><div class="hud top-left"><div class="user-card"><div class="avatar" id="avatar">P</div><div class="user-info"><div class="user-label">Player ID</div><div id="user-id-display" class="user-id">Player_001</div><input id="user-id-input" class="user-id-input" type="text" style="display:none" maxlength="16"></div><button class="edit-btn" id="edit-btn">&#9998; Edit</button></div></div><div class="hud top-right"><div class="crystal-card"><div class="crystal-icon"></div><div><div class="crystal-label">Crystals</div><div class="crystal-count" id="crystals">500</div></div></div></div><div class="hud bottom-left"></div><div class="hud bottom-right"><button class="play-btn" id="play-btn">&#9654; Play</button></div><div class="modal-bg" id="wheel-modal"><div class="wheel-container"><div class="wheel-title">&#127920; Daily Spin</div><canvas id="wheel-canvas" width="260" height="260"></canvas><button class="spin-action" id="spin-action">SPIN!</button><div class="reward-text" id="reward-text"></div><button class="close-wheel" id="close-wheel">Close</button></div></div></div>
 <div class="screen" id="screen-weapons"><div class="topbar"><button class="back-btn" id="back-btn">&larr; Back to Lobby</button><div class="store-title">&#9876;&#65039; Weapons Store</div><div class="crystal-display"><div class="crystal-icon"></div><div class="crystal-count" id="crystals-w">500</div></div></div><div class="filter-bar" id="filter-bar"><button class="filter-btn active" data-filter="all">All</button><button class="filter-btn" data-filter="melee">Melee</button><button class="filter-btn" data-filter="pistol">Pistol</button><button class="filter-btn" data-filter="rifle">Rifle</button><button class="filter-btn" data-filter="heavy">Heavy</button></div><div class="grid" id="grid"></div></div>
 
-<div class="screen" id="screen-game"><div class="damage-vignette" id="dmg-vignette"></div><div id="crosshair">+</div><div id="game-hud"><div class="ghud-tl"><div class="health-bar"><span class="hp-label">HP</span><div class="hp-track"><div class="hp-fill" id="hp-fill"></div></div></div></div><div class="ghud-tc"><div class="wave-info" id="wave-info">WAVE 1</div><div class="score-info" id="score-info">Score: 0</div><div class="kill-info" id="kill-info">Kills: 0</div></div><div class="ghud-tr"><button id="pause-btn">II</button></div><div class="joystick-zone" id="joy-zone"><div class="joy-base" id="joy-base"><div class="joy-stick" id="joy-stick"></div></div></div><div class="look-zone" id="look-zone"></div><div class="weapon-name-hud" id="weapon-hud">AK-47</div><div class="ammo-display" id="ammo-display">30 / 90</div><button class="reload-btn" id="reload-btn">&#x21bb;</button><button class="shoot-btn" id="shoot-btn">FIRE</button></div></div>
+<div class="screen" id="screen-game"><div class="damage-vignette" id="dmg-vignette"></div><div id="crosshair"><div class="cross-dot"></div><div class="cross-ring"></div></div><div id="game-hud"><div class="ghud-tl"><div class="health-bar"><span class="hp-label">HP</span><div class="hp-track"><div class="hp-fill" id="hp-fill"></div></div></div></div><div class="ghud-tc"><div class="wave-info" id="wave-info">WAVE 1</div><div class="score-info" id="score-info">Score: 0</div><div class="kill-info" id="kill-info">Kills: 0</div></div><div class="ghud-tr"><button id="pause-btn">II</button></div><div class="joystick-zone" id="joy-zone"><div class="joy-base" id="joy-base"><div class="joy-stick" id="joy-stick"></div></div></div><div class="look-zone" id="look-zone"></div><div class="weapon-name-hud" id="weapon-hud">AK-47</div><div class="ammo-display" id="ammo-display">30 / 90</div><button class="emote-btn" id="emote-btn">&#x1F600;</button><button class="reload-btn" id="reload-btn">&#x21bb;</button><button class="shoot-btn" id="shoot-btn">FIRE</button></div></div>
 <div class="screen" id="screen-gameover"><div class="go-title">YOU DIED</div><div class="go-stats"><div class="go-stat-row"><span class="go-stat-label">Final Score</span><span class="go-stat-val" id="go-score">0</span></div><div class="go-stat-row"><span class="go-stat-label">Wave Reached</span><span class="go-stat-val" id="go-wave">1</span></div><div class="go-stat-row"><span class="go-stat-label">Zombies Killed</span><span class="go-stat-val" id="go-kills">0</span></div><div class="go-stat-row"><span class="go-stat-label">Crystals Earned</span><span class="go-stat-val" id="go-crystals">0</span></div></div><div class="go-btns"><button class="go-btn go-btn-play" id="go-play-again">Play Again</button><button class="go-btn go-btn-lobby" id="go-lobby">Return to Lobby</button></div></div>
 <div id="pause-menu"><div class="pause-title">PAUSED</div><button class="pause-btn pause-resume" id="pause-resume">Resume</button><button class="pause-btn pause-lobby" id="pause-lobby">Return to Lobby</button></div>
 <div id="rotate-overlay"><div class="rotate-phone"></div><div class="rotate-title">Rotate Your Device</div><div class="rotate-text">Zombie City is best played in landscape mode. Please rotate your phone horizontally.</div></div>
@@ -195,7 +197,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 if(screen.orientation&&screen.orientation.lock){screen.orientation.lock('landscape').catch(function(){});}
-var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null};
+var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null,gunModel:null,gunMuzzle:null};
 var toastTimer;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
 function updateCrystalDisplay(){document.getElementById('crystals').textContent=state.crystals;var w=document.getElementById('crystals-w');if(w)w.textContent=state.crystals;}
@@ -213,22 +215,22 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio,2));renderer.setSize(win
 renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.1;
 var scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x0a0606,0.035);
 var camera=new THREE.PerspectiveCamera(45,window.innerWidth/window.innerHeight,0.1,100);camera.position.set(0,1.5,4.5);
-var controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=0.08;controls.minDistance=3;controls.maxDistance=12;controls.minPolarAngle=Math.PI*0.15;controls.maxPolarAngle=Math.PI*0.55;controls.target.set(0,1.2,0);controls.autoRotate=true;controls.autoRotateSpeed=0.8;controls.rotateSpeed=0.8;controls.zoomSpeed=0.8;controls.enablePan=false;controls.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
+var controls=new OrbitControls(camera,canvas);controls.enableDamping=true;controls.dampingFactor=0.08;controls.minDistance=3;controls.maxDistance=12;controls.minPolarAngle=Math.PI*0.15;controls.maxPolarAngle=Math.PI*0.55;controls.target.set(0,1.2,0);controls.autoRotate=false;controls.rotateSpeed=0.8;controls.zoomSpeed=0.8;controls.enablePan=false;controls.touches={ONE:THREE.TOUCH.ROTATE,TWO:THREE.TOUCH.DOLLY_PAN};
 scene.add(new THREE.AmbientLight(0x443333,0.5));
 var keyLight=new THREE.DirectionalLight(0xff8866,1.2);keyLight.position.set(5,8,5);keyLight.castShadow=true;keyLight.shadow.mapSize.set(2048,2048);keyLight.shadow.camera.near=0.5;keyLight.shadow.camera.far=30;keyLight.shadow.camera.left=-5;keyLight.shadow.camera.right=5;keyLight.shadow.camera.top=8;keyLight.shadow.camera.bottom=-2;scene.add(keyLight);
 var rimLight=new THREE.DirectionalLight(0x4488ff,0.6);rimLight.position.set(-5,4,-5);scene.add(rimLight);
 var fillLight=new THREE.PointLight(0xff5252,0.8,15);fillLight.position.set(0,3,2);scene.add(fillLight);
-var platform=new THREE.Mesh(new THREE.CylinderGeometry(3.2,3.5,0.3,64),new THREE.MeshStandardMaterial({color:0x1a1a1a,metalness:0.4,roughness:0.7}));platform.position.y=-0.15;platform.receiveShadow=true;scene.add(platform);
-var ring=new THREE.Mesh(new THREE.TorusGeometry(3.3,0.06,16,80),new THREE.MeshStandardMaterial({color:0xff5252,emissive:0xff5252,emissiveIntensity:0.8}));ring.rotation.x=Math.PI/2;ring.position.y=0.02;scene.add(ring);
+var platform=new THREE.Mesh(new THREE.PlaneGeometry(200,200),new THREE.MeshStandardMaterial({color:0x0a0606,metalness:0.1,roughness:0.9}));platform.rotation.x=-Math.PI/2;platform.position.y=-0.01;platform.receiveShadow=true;scene.add(platform);
+
 function makePlaceholder(){var g=new THREE.Group();var sk=new THREE.MeshStandardMaterial({color:0xc9a07a,roughness:0.8});var cl=new THREE.MeshStandardMaterial({color:0x2a3a2a,roughness:0.9});var pa=new THREE.MeshStandardMaterial({color:0x1a1a2a,roughness:0.9});var t=new THREE.Mesh(new THREE.CapsuleGeometry(0.35,0.7,4,12),cl);t.position.y=1.1;t.castShadow=true;g.add(t);var h=new THREE.Mesh(new THREE.SphereGeometry(0.28,24,24),sk);h.position.y=1.85;h.castShadow=true;g.add(h);var aL=new THREE.Mesh(new THREE.CapsuleGeometry(0.12,0.55,4,8),cl);aL.position.set(-0.48,1.1,0);aL.castShadow=true;g.add(aL);var aR=aL.clone();aR.position.x=0.48;g.add(aR);var lL=new THREE.Mesh(new THREE.CapsuleGeometry(0.14,0.5,4,8),pa);lL.position.set(-0.18,0.35,0);lL.castShadow=true;g.add(lL);var lR=lL.clone();lR.position.x=0.18;g.add(lR);return g;}
 var placeholder=makePlaceholder();scene.add(placeholder);state.characterModel=placeholder;
-canvas.addEventListener('dblclick',function(){if(state.characterMixer&&state.walkAction){if(state.currentAnim==='walk'){state.walkAction.stop();state.currentAnim='idle';showToast('Idle stance');}else{state.walkAction.play();state.currentAnim='walk';showToast('Walk animation');}}});
+
 function onResize(){var w=window.innerWidth;var h=window.visualViewport?window.visualViewport.height:window.innerHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h);checkOrientation();}
 window.addEventListener('resize',onResize);window.addEventListener('orientationchange',function(){setTimeout(onResize,150);});
 if(window.visualViewport){window.visualViewport.addEventListener('resize',onResize);}
 var clock=new THREE.Clock();var game={active:false,health:100,maxHealth:100,score:0,kills:0,wave:1,zombies:[],bullets:[],maxZombies:5,zombieSpawnTimer:0,zombieSpawnInterval:3,waveZombiesLeft:5,waveTotal:5,betweenWaves:false,waveBreak:0,gameOver:false,paused:false,lastHitTime:0,moveDir:{x:0,y:0},lookAngle:0,playerAngle:0,isShooting:false,lastShot:0,ammo:30,maxAmmo:30,reserve:90,reloading:false,reloadStart:0,weaponName:'AK-47',weaponDmg:70,fireRate:120,reloadTime:2000,playerSpeed:4,sprintSpeed:7,cameraAngle:0,cameraDistance:4,cameraHeight:2};
 
-function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(!game.active&&state.characterModel&&state.currentAnim==='idle'){state.characterModel.position.y=Math.sin(clock.elapsedTime*1.5)*0.03;state.characterModel.rotation.z=Math.sin(clock.elapsedTime*0.8)*0.015;}else if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;}ring.rotation.z+=0.003;if(game.active){gameTick(dt);}controls.update();renderer.render(scene,camera);}animate();
+function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;}if(game.active){gameTick(dt);}controls.update();renderer.render(scene,camera);}animate();
 var cW1=20,cW2=15,aW=18,kW=17,cityW=20;
 window.__setLoader(5,'Preparing assets...');
 loadGLB('models/character.glb',function(e){if(e.total)window.__setLoader(5+(e.loaded/e.total)*cW1,'Loading character...');})
@@ -263,6 +265,13 @@ window.__setLoader(5+cW1+cW2,'Game character loaded!');
 return loadGLB('models/ak-47.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+(e.loaded/e.total)*aW,'Loading AK-47...');});
 })
 .then(function(gltf){state.loadedModels.ak47=gltf;window.__setLoader(5+cW1+cW2+aW,'AK-47 loaded!');
+var gunScene=gltf.scene.clone();
+gunScene.traverse(function(o){if(o.isMesh){o.castShadow=true;}});
+gunScene.scale.setScalar(0.5);
+gunScene.rotation.y=Math.PI/2;
+gunScene.position.set(0.15,0.9,-0.15);
+gunScene.visible=false;
+state.gunModel=gunScene;
 return loadGLB('models/ak103.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+aW+(e.loaded/e.total)*kW,'Loading AK-103...');});
 })
 .then(function(gltf){state.loadedModels.ak103=gltf;window.__setLoader(5+cW1+cW2+aW+kW,'AK-103 loaded!');
@@ -277,7 +286,7 @@ var box2=new THREE.Box3().setFromObject(city);var center2=box2.getCenter(new THR
 city.position.x-=center2.x;city.position.z-=center2.z;city.position.y=-box2.min.y;scene.add(city);
 state.cityBounds=new THREE.Box3().setFromObject(city);
 var cb=state.cityBounds;var cx=cb.min.x+(cb.max.x-cb.min.x)/2;var cz=cb.min.z+(cb.max.z-cb.min.z)/2;
-var halfW=(cb.max.x-cb.min.x)/2*0.9;var halfD=(cb.max.z-cb.min.z)/2*0.9;
+var halfW=(cb.max.x-cb.min.x)/2*0.95;var halfD=(cb.max.z-cb.min.z)/2*0.95;
 state.cityCenter={x:cx,z:cz};state.cityHalfW=halfW;state.cityHalfD=halfD;
 var wallH=25,wallT=0.5;
 var wallMat=new THREE.MeshStandardMaterial({color:0x1a1a2a,transparent:true,opacity:0.0,roughness:1,metalness:0});
@@ -343,6 +352,10 @@ state.gameCharacterModel.visible=true;
 state.gameCharacterModel.position.set(spawnX,0,spawnZ);
 state.gameCharacterModel.rotation.y=0;
 state.activeCharacter=state.gameCharacterModel;
+if(state.gunModel){
+state.activeCharacter.add(state.gunModel);
+state.gunModel.visible=true;
+}
 state.activeMixer=state.gameCharacterMixer;
 state.activeWalkAction=state.gameCharAction;
 state.currentAnim='walk';
@@ -362,7 +375,7 @@ showToast('Wave 1 - Survive!');
 
 function endGame(){
 game.active=false;game.gameOver=true;
-if(state.gameCharacterModel)state.gameCharacterModel.visible=false;
+if(state.gameCharacterModel){if(state.gunModel)state.gameCharacterModel.remove(state.gunModel);state.gameCharacterModel.visible=false;}
 if(state.cityWalls)state.cityWalls.forEach(function(w){w.visible=false;});
 if(state.lobbyCharacterModel){
 state.lobbyCharacterModel.visible=true;
@@ -564,11 +577,16 @@ var len=Math.sqrt(mvx*mvx+mvy*mvy);
 if(len>1){mvx/=len;mvy/=len;}
 p.x+=forward.x*mvy*speed*dt+right.x*mvx*speed*dt;
 p.z+=forward.z*mvy*speed*dt+right.z*mvx*speed*dt;
+if(game.isShooting){
+game.playerAngle=game.cameraAngle;
+state.activeCharacter.rotation.y=game.cameraAngle;
+}else if(mvx||mvy){
 game.playerAngle=Math.atan2(forward.x*mvy+right.x*mvx,-(forward.z*mvy+right.z*mvx));
 state.activeCharacter.rotation.y=game.playerAngle;
-if(state.characterMixer&&state.currentAnim!=='walk'){if(state.walkAction){state.walkAction.reset();state.walkAction.play();}state.currentAnim='walk';}
+}
+if(state.activeMixer&&state.currentAnim!=='walk'){if(state.activeWalkAction){state.activeWalkAction.reset();state.activeWalkAction.play();}state.currentAnim='walk';}
 }else{
-if(state.characterMixer&&state.currentAnim!=='idle'){if(state.walkAction)state.walkAction.stop();state.currentAnim='idle';}
+if(state.activeMixer&&state.currentAnim!=='idle'){if(state.activeWalkAction)state.activeWalkAction.stop();state.currentAnim='idle';}
 }
 if(state.cityCenter&&state.cityHalfW&&state.cityHalfD){
 var cx=state.cityCenter.x,cz=state.cityCenter.z;
@@ -638,6 +656,14 @@ lz.addEventListener('pointerup',function(){mouseDown=false;});
 lz.addEventListener('pointerleave',function(){mouseDown=false;});
 }}catch(e){console.error('Look zone setup error:',e);}
 try{
+var emoteBtn=document.getElementById('emote-btn');
+if(emoteBtn){emoteBtn.addEventListener('click',function(){
+if(!state.activeCharacter)return;
+if(state.activeMixer&&state.activeWalkAction){
+if(state.currentAnim==='walk'){state.activeWalkAction.stop();state.currentAnim='idle';showToast('Idle');}
+else{state.activeWalkAction.reset();state.activeWalkAction.play();state.currentAnim='walk';showToast('Walking');}
+}
+});}
 var shootBtn=document.getElementById('shoot-btn');
 if(shootBtn){
 shootBtn.addEventListener('pointerdown',function(){game.isShooting=true;});
@@ -673,7 +699,7 @@ var dist=Math.sqrt(dx*dx+dy*dy);
 var maxDist=50;
 if(dist>maxDist){dx=dx/dist*maxDist;dy=dy/dist*maxDist;}
 joyStick.style.transform='translate('+dx+'px,'+dy+'px)';
-game.moveDir.x=dx/maxDist;game.moveDir.y=-dy/maxDist;
+game.moveDir.x=dx/maxDist;game.moveDir.y=dy/maxDist;
 });
 var joyEnd=function(e){
 if(!joyActive)return;
