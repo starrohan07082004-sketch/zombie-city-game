@@ -301,7 +301,6 @@ if(n==='mixamorig:RightHand_035')state.charBones.rightHand=o;
 });
 });
 window.__setLoader(5+cW1+cW2,'Character loaded!');
-}).catch(function(e){console.warn('Game char failed:',e);window.__setLoader(5+cW1+cW2,'Game char skipped');});
 return loadGLB('models/ak-47.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+(e.loaded/e.total)*aW,'Loading AK-47...');});
 })
 .then(function(gltf){state.loadedModels.ak47=gltf;window.__setLoader(5+cW1+cW2+aW,'AK-47 loaded!');
