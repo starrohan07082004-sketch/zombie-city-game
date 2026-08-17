@@ -15,8 +15,8 @@ jobs:
         run: |
           mkdir -p models
           gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern '*.glb'
-          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern 'index_v19.html'
-          mv -f index_v19.html index.html
+          gh release download v1.0.0 -R ${{ github.repository }} -D . --clobber --pattern 'index_v19b.html'
+          mv -f index_v19b.html index.html
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Move models to models directory
@@ -31,5 +31,5 @@ jobs:
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add -A
-          git commit -m "v19: tactical character + zombie scale fix [skip ci]" || echo "No changes"
+          git commit -m "v19b: fix syntax error [skip ci]" || echo "No changes"
           git push
