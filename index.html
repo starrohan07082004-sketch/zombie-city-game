@@ -197,7 +197,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 if(screen.orientation&&screen.orientation.lock){screen.orientation.lock('landscape').catch(function(){});}
-var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null,gunModel:null,gunMuzzle:null,zombieModel:null,charBones:{}};
+var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null,gunModel:null,gunMuzzle:null,charBones:{}};
 var toastTimer;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
 function updateCrystalDisplay(){document.getElementById('crystals').textContent=state.crystals;var w=document.getElementById('crystals-w');if(w)w.textContent=state.crystals;}
@@ -254,7 +254,8 @@ loadGLB('models/character_tactical.glb',function(e){if(e.total)window.__setLoade
 .then(function(gltf){
 var m=gltf.scene;m.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
 m.scale.setScalar(0.01);
-m.position.set(0,0,0);
+var b2=new THREE.Box3().setFromObject(m);var c=b2.getCenter(new THREE.Vector3());
+m.position.x-=c.x;m.position.y-=b2.min.y;m.position.z-=c.z;
 m.visible=false;scene.add(m);state.gameCharacterModel=m;
 state.gameCharacterMixer=new THREE.AnimationMixer(m);
 if(gltf.animations&&gltf.animations.length>0){state.gameCharAction=state.gameCharacterMixer.clipAction(gltf.animations[0]);state.gameCharAction.play();state.gameCharAnim='walk';}
@@ -312,7 +313,6 @@ state.cityWalls=walls;
 window.__setLoader(100,'All models loaded!');showToast('City loaded!');
 })
 .catch(function(err){console.error('Load error:',err);window.__setLoader(100,'Loading complete');showToast('Some models failed');});
-loadGLB('models/zombie.glb').then(function(gltf){if(gltf&&gltf.scene){var zm=gltf.scene;zm.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});zm.scale.setScalar(0.006);zm.position.set(0,0,0);state.zombieModel=zm;console.log('Zombie loaded');}}).catch(function(e){console.error('Zombie failed:',e);});
 var sb=document.getElementById('spin-btn');if(sb)sb.addEventListener('click',function(){document.getElementById('wheel-modal').classList.add('show');document.getElementById('reward-text').textContent='';document.getElementById('spin-action').disabled=false;});
 var wb=document.getElementById('weapons-btn');if(wb)wb.addEventListener('click',function(){showScreen('screen-weapons');updateCrystalDisplay();renderGrid();});
 document.getElementById('play-btn').addEventListener('click',function(){startGame();});
@@ -363,7 +363,7 @@ state.gameCharacterModel.rotation.y=0;
 state.activeCharacter=state.gameCharacterModel;
 if(state.gunModel){
 state.gunModel.visible=true;
-state.gunModel.scale.set(0.3,0.3,0.3);
+state.gunModel.scale.set(30,30,30);
 state.gunModel.position.set(0,0,0.05);
 state.gunModel.rotation.set(0,Math.PI/2,0);
 if(state.charBones.rightHand){
@@ -439,42 +439,32 @@ var wh=document.getElementById('weapon-hud');if(wh)wh.textContent=game.weaponNam
 
 function makeZombie(){
 var g=new THREE.Group();
-var speed=1.5;var hp=50;var dmg=10;
-var r=Math.random();var isTank=false,isRunner=false;
-if(game.wave>=5&&r<0.2){speed=0.8;hp=150;dmg=25;isTank=true;}
-else if(game.wave>=3&&r<0.4){speed=4.0;hp=30;dmg=8;isRunner=true;}
-if(state.zombieModel){
-var zm=state.zombieModel.clone(true);
-zm.traverse(function(o){if(o.isMesh){o.material=o.material.clone();if(isTank){o.material.color.setHex(0x3a3a3a);}else if(isRunner){o.material.color.setHex(0x8b0000);}}});
-g.add(zm);
-g.userData.legs=[];g.userData.arms=[];
-zm.traverse(function(o){var n=o.name||'';if(n.indexOf('Leg')>=0||n.indexOf('UpLeg')>=0)g.userData.legs.push(o);if(n.indexOf('Arm')>=0||n.indexOf('Hand')>=0)g.userData.arms.push(o);});
-}else{
-var bc=0x2d5a1e;if(isTank)bc=0x3a3a3a;if(isRunner)bc=0x8b0000;
-var body=new THREE.Mesh(new THREE.CapsuleGeometry(0.3,0.8,4,12),new THREE.MeshStandardMaterial({color:bc,roughness:.8}));
+var bodyColor=0x2d5a1e;var speed=1.5;var hp=50;var dmg=10;
+var r=Math.random();
+if(game.wave>=5&&r<0.2){bodyColor=0x3a3a3a;speed=0.8;hp=150;dmg=25;}
+else if(game.wave>=3&&r<0.4){bodyColor=0x8b0000;speed=4.0;hp=30;dmg=8;}
+var body=new THREE.Mesh(new THREE.CapsuleGeometry(0.3,0.8,4,12),new THREE.MeshStandardMaterial({color:bodyColor,roughness:.8}));
 body.position.y=0.7;body.castShadow=true;g.add(body);
-var head=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),new THREE.MeshStandardMaterial({color:bc,roughness:.7}));
+var head=new THREE.Mesh(new THREE.SphereGeometry(0.22,12,10),new THREE.MeshStandardMaterial({color:bodyColor,roughness:.7}));
 head.position.y=1.4;head.castShadow=true;g.add(head);
 var leye=new THREE.Mesh(new THREE.SphereGeometry(0.05,6,6),new THREE.MeshStandardMaterial({color:0xff0000,emissive:0xff0000,emissiveIntensity:1}));
 leye.position.set(-0.08,1.45,0.18);g.add(leye);
 var reye=new THREE.Mesh(new THREE.SphereGeometry(0.05,6,6),new THREE.MeshStandardMaterial({color:0xff0000,emissive:0xff0000,emissiveIntensity:1}));
 reye.position.set(0.08,1.45,0.18);g.add(reye);
-var larm=new THREE.Mesh(new THREE.CapsuleGeometry(0.1,0.5,4,8),new THREE.MeshStandardMaterial({color:bc}));
+var larm=new THREE.Mesh(new THREE.CapsuleGeometry(0.1,0.5,4,8),new THREE.MeshStandardMaterial({color:bodyColor}));
 larm.position.set(-0.35,0.8,0);larm.rotation.z=0.3;g.add(larm);
-var rarm=new THREE.Mesh(new THREE.CapsuleGeometry(0.1,0.5,4,8),new THREE.MeshStandardMaterial({color:bc}));
+var rarm=new THREE.Mesh(new THREE.CapsuleGeometry(0.1,0.5,4,8),new THREE.MeshStandardMaterial({color:bodyColor}));
 rarm.position.set(0.35,0.8,0);rarm.rotation.z=-0.3;g.add(rarm);
-var lleg=new THREE.Mesh(new THREE.CapsuleGeometry(0.12,0.4,4,8),new THREE.MeshStandardMaterial({color:bc}));
+var lleg=new THREE.Mesh(new THREE.CapsuleGeometry(0.12,0.4,4,8),new THREE.MeshStandardMaterial({color:bodyColor}));
 lleg.position.set(-0.15,0.2,0);g.add(lleg);
-var rleg=new THREE.Mesh(new THREE.CapsuleGeometry(0.12,0.4,4,8),new THREE.MeshStandardMaterial({color:bc}));
+var rleg=new THREE.Mesh(new THREE.CapsuleGeometry(0.12,0.4,4,8),new THREE.MeshStandardMaterial({color:bodyColor}));
 rleg.position.set(0.15,0.2,0);g.add(rleg);
-g.userData.legs=[lleg,rleg];g.userData.arms=[larm,rarm];
-}
-var pPos=state.activeCharacter?state.activeCharacter.position:{x:0,y:0,z:0};
-var angle=Math.random()*Math.PI*2;var dist=15+Math.random()*10;
-g.position.set(pPos.x+Math.cos(angle)*dist,0,pPos.z+Math.sin(angle)*dist);
+var angle=Math.random()*Math.PI*2;var dist=25+Math.random()*10;
+g.position.set(Math.cos(angle)*dist,0,Math.sin(angle)*dist);
 scene.add(g);
-return {mesh:g,hp:hp,maxHp:hp,speed:speed,dmg:dmg,attackCD:0,walkPhase:Math.random()*6.28,dead:false,deathTime:0};
+return {mesh:g,body:body,head:head,larm:larm,rarm:rarm,lleg:lleg,rleg:rleg,hp:hp,maxHp:hp,speed:speed,dmg:dmg,attackCD:0,walkPhase:Math.random()*6.28,dead:false,deathTime:0};
 }
+
 function spawnZombie(){
 if(game.zombies.length>=game.maxZombies)return;
 game.zombies.push(makeZombie());
@@ -565,10 +555,11 @@ z.mesh.position.z=zNewZ;
 }
 z.mesh.rotation.y=Math.atan2(dx,dz);
 }
-z.walkPhase+=dt*z.speed*2;
-var legs=z.mesh.userData.legs||[];var arms=z.mesh.userData.arms||[];
-for(var li=0;li<legs.length;li++){if(legs[li])legs[li].rotation.x=Math.sin(z.walkPhase+(li%2?3.14:0))*0.5;}
-for(var ai=0;ai<arms.length;ai++){if(arms[ai])arms[ai].rotation.x=Math.sin(z.walkPhase+(ai%2?0:3.14))*0.4;}
+z.walkPhase+=dt*4;
+z.lleg.rotation.x=Math.sin(z.walkPhase)*0.4;
+z.rleg.rotation.x=-Math.sin(z.walkPhase)*0.4;
+z.larm.rotation.x=Math.sin(z.walkPhase)*0.3;
+z.rarm.rotation.x=-Math.sin(z.walkPhase)*0.3;
 if(dist<1.3&&z.attackCD<=0&&!z.dead){
 game.health-=z.dmg;
 z.attackCD=1500;
