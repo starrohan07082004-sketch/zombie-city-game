@@ -197,7 +197,7 @@ import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
 if(screen.orientation&&screen.orientation.lock){screen.orientation.lock('landscape').catch(function(){});}
-var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null,gunModel:null,gunMuzzle:null,charBones:{}};
+var state={userId:localStorage.getItem('zc_userid')||'Player_001',crystals:parseInt(localStorage.getItem('zc_crystals')||'500',10),owned:JSON.parse(localStorage.getItem('zc_owned')||'[]'),characterModel:null,characterMixer:null,currentAnim:'walk',editing:false,loadedModels:{},cityModel:null,gameCharacterModel:null,gameCharacterMixer:null,gameCharAction:null,gameCharAnim:null,cityBounds:null,cityCenter:null,cityHalfW:0,cityHalfD:0,cityWalls:[],lobbyCharacterModel:null,lobbyCharacterMixer:null,lobbyWalkAction:null,activeCharacter:null,activeMixer:null,activeWalkAction:null,gunModel:null,gunMuzzle:null,charBones:{},emoteModel:null,emoteMixer:null,emoteAction:null,emoteActive:false,emoteTimer:0};
 var toastTimer;
 function showToast(msg){var el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(function(){el.classList.remove('show');},2500);}
 function updateCrystalDisplay(){document.getElementById('crystals').textContent=state.crystals;var w=document.getElementById('crystals-w');if(w)w.textContent=state.crystals;}
@@ -230,7 +230,18 @@ window.addEventListener('resize',onResize);window.addEventListener('orientationc
 if(window.visualViewport){window.visualViewport.addEventListener('resize',onResize);}
 var clock=new THREE.Clock();var game={active:false,health:100,maxHealth:100,score:0,kills:0,wave:1,zombies:[],bullets:[],maxZombies:5,zombieSpawnTimer:0,zombieSpawnInterval:3,waveZombiesLeft:5,waveTotal:5,betweenWaves:false,waveBreak:0,gameOver:false,paused:false,lastHitTime:0,moveDir:{x:0,y:0},lookAngle:0,playerAngle:0,isShooting:false,lastShot:0,ammo:30,maxAmmo:30,reserve:90,reloading:false,reloadStart:0,weaponName:'AK-47',weaponDmg:70,fireRate:120,reloadTime:2000,playerSpeed:4,sprintSpeed:7,cameraAngle:0,cameraPitch:0.3,cameraDistance:6,cameraHeight:3.5};
 
-function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;}if(game.active){gameTick(dt);}else{controls.update();}renderer.render(scene,camera);}animate();
+function animate(){requestAnimationFrame(animate);var dt=clock.getDelta();var mixToUpd=game.active?state.activeMixer:state.characterMixer;var modToCheck=game.active?state.activeCharacter:state.characterModel;if(mixToUpd&&modToCheck&&modToCheck.visible)mixToUpd.update(dt);if(game.active&&state.activeCharacter){state.activeCharacter.position.y=0;state.activeCharacter.rotation.z=0;}if(game.active){gameTick(dt);}else{controls.update();}if(state.emoteMixer)state.emoteMixer.update(dt);
+if(state.emoteActive){
+state.emoteTimer-=dt*1000;
+if(state.emoteTimer<=0){
+state.emoteActive=false;
+if(state.emoteAction)state.emoteAction.stop();
+state.emoteModel.visible=false;
+if(state.activeCharacter)state.activeCharacter.visible=true;
+if(state.gunModel)state.gunModel.visible=true;
+}
+}
+renderer.render(scene,camera);}animate();
 var cW1=20,cW2=15,aW=18,kW=17,cityW=20;
 window.__setLoader(5,'Preparing assets...');
 loadGLB('models/character.glb',function(e){if(e.total)window.__setLoader(5+(e.loaded/e.total)*cW1,'Loading character...');})
@@ -313,6 +324,19 @@ state.cityWalls=walls;
 window.__setLoader(100,'All models loaded!');showToast('City loaded!');
 })
 .catch(function(err){console.error('Load error:',err);window.__setLoader(100,'Loading complete');showToast('Some models failed');});
+loadGLB('models/emote.glb',function(e){}).then(function(gltf){
+var em=gltf.scene;em.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+var eb=new THREE.Box3().setFromObject(em);var es=eb.getSize(new THREE.Vector3());
+if(es.y>0)em.scale.setScalar(1.8/es.y);
+var eb2=new THREE.Box3().setFromObject(em);var ec=eb2.getCenter(new THREE.Vector3());
+em.position.x-=ec.x;em.position.y-=eb2.min.y;em.position.z-=ec.z;
+em.visible=false;scene.add(em);state.emoteModel=em;
+state.emoteMixer=new THREE.AnimationMixer(em);
+if(gltf.animations&&gltf.animations.length>0){
+state.emoteAction=state.emoteMixer.clipAction(gltf.animations[0]);
+}
+console.log('Emote model loaded');
+}).catch(function(err){console.error('Emote load failed:',err);});
 var sb=document.getElementById('spin-btn');if(sb)sb.addEventListener('click',function(){document.getElementById('wheel-modal').classList.add('show');document.getElementById('reward-text').textContent='';document.getElementById('spin-action').disabled=false;});
 var wb=document.getElementById('weapons-btn');if(wb)wb.addEventListener('click',function(){showScreen('screen-weapons');updateCrystalDisplay();renderGrid();});
 document.getElementById('play-btn').addEventListener('click',function(){startGame();});
@@ -397,7 +421,7 @@ showToast('Wave 1 - Survive!');
 
 function endGame(){
 game.active=false;game.gameOver=true;
-if(state.gameCharacterModel){if(state.gunModel&&state.gunModel.parent)state.gunModel.parent.remove(state.gunModel);state.gameCharacterModel.visible=false;}
+if(state.gameCharacterModel){if(state.gunModel&&state.gunModel.parent)state.gunModel.parent.remove(state.gunModel);state.gameCharacterModel.visible=false;}if(state.emoteModel){state.emoteModel.visible=false;state.emoteActive=false;}
 if(state.cityWalls)state.cityWalls.forEach(function(w){w.visible=false;});
 if(state.lobbyCharacterModel){
 state.lobbyCharacterModel.visible=true;
@@ -733,10 +757,19 @@ try{
 var emoteBtn=document.getElementById('emote-btn');
 if(emoteBtn){emoteBtn.addEventListener('pointerdown',function(e){e.stopPropagation();});emoteBtn.addEventListener('click',function(e){e.stopPropagation();
 if(!state.activeCharacter)return;
-if(state.activeMixer&&state.activeWalkAction){
-if(state.currentAnim==='walk'){state.activeWalkAction.stop();state.currentAnim='idle';showToast('Idle');}
-else{state.activeWalkAction.reset();state.activeWalkAction.play();state.currentAnim='walk';showToast('Walking');}
-}
+if(state.emoteActive)return;
+if(!state.emoteModel||!state.emoteAction){showToast('Emote not loaded');return;}
+var ch=state.activeCharacter;
+state.emoteModel.position.copy(ch.position);
+state.emoteModel.rotation.copy(ch.rotation);
+ch.visible=false;
+state.emoteModel.visible=true;
+state.emoteAction.reset();
+state.emoteAction.play();
+state.emoteActive=true;
+state.emoteTimer=3000;
+if(state.gunModel)state.gunModel.visible=false;
+showToast('Emote!');
 });}
 var shootBtn=document.getElementById('shoot-btn');
 if(shootBtn){
