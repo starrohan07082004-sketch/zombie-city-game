@@ -261,16 +261,13 @@ state.lobbyCharacterMixer=state.characterMixer;state.lobbyWalkAction=state.walkA
 }
 state.loadedModels.character=true;
 window.__setLoader(5+cW1,'Character loaded!');
-loadGLB('models/character_tactical.glb',function(e){if(e.total)window.__setLoader(5+cW1+(e.loaded/e.total)*cW2,'Loading character...');})
+loadGLB('models/ray_character.glb',function(e){if(e.total)window.__setLoader(5+cW1+(e.loaded/e.total)*cW2,'Loading character...');})
 .then(function(gltf){
 var m=gltf.scene;m.traverse(function(o){if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-m.scale.setScalar(0.01);
-var b2=new THREE.Box3().setFromObject(m);var c=b2.getCenter(new THREE.Vector3());
-m.position.x-=c.x;m.position.y-=b2.min.y;m.position.z-=c.z;
+m.scale.setScalar(1.8);
+m.position.set(0,0,0);
 m.visible=false;scene.add(m);state.gameCharacterModel=m;
-state.gameCharacterMixer=new THREE.AnimationMixer(m);
-if(gltf.animations&&gltf.animations.length>0){state.gameCharAction=state.gameCharacterMixer.clipAction(gltf.animations[0]);state.gameCharAction.play();state.gameCharAnim='walk';}
-m.traverse(function(o){if((o.name||'').indexOf('RightHand_035')>=0)state.charBones.rightHand=o;});
+state.gameCharAnim='idle';
 window.__setLoader(5+cW1+cW2,'Character loaded!');
 }).catch(function(e){console.warn('Game char failed:',e);window.__setLoader(5+cW1+cW2,'Game char skipped');});
 return loadGLB('models/ak-47.glb',function(e){if(e.total)window.__setLoader(5+cW1+cW2+(e.loaded/e.total)*aW,'Loading AK-47...');});
@@ -387,19 +384,14 @@ state.gameCharacterModel.rotation.y=0;
 state.activeCharacter=state.gameCharacterModel;
 if(state.gunModel){
 state.gunModel.visible=true;
-state.gunModel.scale.set(30,30,30);
-state.gunModel.position.set(0,0,0.05);
+state.gunModel.scale.set(0.3,0.3,0.3);
+state.gunModel.position.set(0.25,1.0,0.1);
 state.gunModel.rotation.set(0,Math.PI/2,0);
-if(state.charBones.rightHand){
-state.charBones.rightHand.add(state.gunModel);
-}else{
 state.activeCharacter.add(state.gunModel);
-state.gunModel.position.set(0.3,1.0,0);
-}
 }
 state.activeMixer=state.gameCharacterMixer;
 state.activeWalkAction=state.gameCharAction;
-state.currentAnim='walk';
+state.currentAnim='idle';
 }else{
 if(state.characterModel)state.characterModel.position.set(spawnX,0,spawnZ);
 state.activeCharacter=state.characterModel;
