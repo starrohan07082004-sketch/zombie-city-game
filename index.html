@@ -489,10 +489,7 @@ scene.add(g);
 return {mesh:g,body:body,head:head,larm:larm,rarm:rarm,lleg:lleg,rleg:rleg,hp:hp,maxHp:hp,speed:speed,dmg:dmg,attackCD:0,walkPhase:Math.random()*6.28,dead:false,deathTime:0};
 }
 
-function spawnZombie(){
-if(game.zombies.length>=game.maxZombies)return;
-game.zombies.push(makeZombie());
-}
+function spawnZombie(){return;}
 
 function shootRay(){
 if(game.reloading||game.ammo<=0)return;
@@ -541,61 +538,7 @@ updateGameHUD();
 },game.reloadTime);
 }
 
-function updateZombies(dt){
-var playerPos=state.activeCharacter?state.activeCharacter.position:(state.characterModel?state.characterModel.position:new THREE.Vector3(0,0,0));
-for(var i=game.zombies.length-1;i>=0;i--){
-var z=game.zombies[i];
-if(z.dead){
-z.deathTime+=dt*1000;
-z.mesh.position.y-=dt*0.5;
-z.mesh.rotation.x+=dt*2;
-z.mesh.scale.multiplyScalar(1-dt*0.8);
-if(z.deathTime>1000){scene.remove(z.mesh);game.zombies.splice(i,1);}
-continue;
-}
-var dx=playerPos.x-z.mesh.position.x;
-var dz=playerPos.z-z.mesh.position.z;
-var dist=Math.sqrt(dx*dx+dz*dz);
-if(dist>0.1){
-var zNewX=z.mesh.position.x+(dx/dist)*z.speed*dt;
-var zNewZ=z.mesh.position.z+(dz/dist)*z.speed*dt;
-if(state.collBoxes&&state.collBoxes.length>0){
-var zRad=0.5;
-var zCanX=true,zCanZ=true;
-for(var zi=0;zi<state.collBoxes.length;zi++){
-var zb=state.collBoxes[zi];
-if(zNewX+zRad>zb.minX&&zNewX-zRad<zb.maxX&&z.mesh.position.z+zRad>zb.minZ&&z.mesh.position.z-zRad<zb.maxZ){
-zCanX=false;
-}
-if(z.mesh.position.x+zRad>zb.minX&&z.mesh.position.x-zRad<zb.maxX&&zNewZ+zRad>zb.minZ&&zNewZ-zRad<zb.maxZ){
-zCanZ=false;
-}
-}
-if(zCanX)z.mesh.position.x=zNewX;
-if(zCanZ)z.mesh.position.z=zNewZ;
-}else{
-z.mesh.position.x=zNewX;
-z.mesh.position.z=zNewZ;
-}
-z.mesh.rotation.y=Math.atan2(dx,dz);
-}
-z.walkPhase+=dt*4;
-z.lleg.rotation.x=Math.sin(z.walkPhase)*0.4;
-z.rleg.rotation.x=-Math.sin(z.walkPhase)*0.4;
-z.larm.rotation.x=Math.sin(z.walkPhase)*0.3;
-z.rarm.rotation.x=-Math.sin(z.walkPhase)*0.3;
-if(dist<1.3&&z.attackCD<=0&&!z.dead){
-game.health-=z.dmg;
-z.attackCD=1500;
-game.lastHitTime=performance.now();
-var dv=document.getElementById('dmg-vignette');
-if(dv){dv.classList.add('hit');setTimeout(function(){dv.classList.remove('hit');},150);}
-if(game.health<=0){game.health=0;updateGameHUD();endGame();return;}
-updateGameHUD();
-}
-if(z.attackCD>0)z.attackCD-=dt*1000;
-}
-}
+function updateZombies(dt){return;}
 
 function updateWaves(dt){
 if(game.betweenWaves){
@@ -603,29 +546,21 @@ game.waveBreak-=dt;
 if(game.waveBreak<=0){
 game.betweenWaves=false;
 game.wave++;
-var count=5+(game.wave-1)*3;
-game.waveTotal=count;game.waveZombiesLeft=count;
-game.maxZombies=Math.min(count,8+Math.floor(game.wave/2));
-game.zombieSpawnInterval=Math.max(1,3-game.wave*0.2);
-showToast('Wave '+game.wave+' - '+count+' zombies!');
+var count=5+game.wave*3;
+game.waveTotal=count;
+game.waveZombiesLeft=0;
+game.zombieSpawnTimer=0;
+showToast('Wave '+game.wave);
 updateGameHUD();
 }
 return;
 }
-if(game.waveZombiesLeft>0){
-game.zombieSpawnTimer+=dt;
-if(game.zombieSpawnTimer>=game.zombieSpawnInterval){
-game.zombieSpawnTimer=0;
-spawnZombie();
-game.waveZombiesLeft--;
-}
-}
-var aliveZombies=game.zombies.filter(function(z){return !z.dead;}).length;
-if(game.waveZombiesLeft===0&&aliveZombies===0){
-game.betweenWaves=true;game.waveBreak=5;
+if(game.waveZombiesLeft===0&&game.zombies.length===0){
+game.betweenWaves=true;
+game.waveBreak=5;
 var reward=50+game.wave*25;
-game.score+=reward;
-showToast('Wave '+game.wave+' cleared! +'+reward+' bonus');
+game.coins+=reward;
+showToast('Wave '+game.wave+' cleared! +'+reward+' coins');
 updateGameHUD();
 }
 }
